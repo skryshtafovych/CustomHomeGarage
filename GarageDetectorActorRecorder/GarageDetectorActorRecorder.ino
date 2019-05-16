@@ -1,21 +1,28 @@
 /*
-  State change detection (edge detection)
+  Cloud State change detection (cloud edge detection)
 
   Often, you don't need to know the state of a digital input all the time, but
   you just need to know when the input changes from one state to another.
   For example, you want to know when a Hall Sensor goes from OFF to ON. This is called
   state change detection, or edge detection.
 
-  This example shows how to detect when a button or button changes from off to on
-  and on to off.
+  This example shows how to detect when a hall Sensor or button changes from off to on
+  and on to off or Up to Down or Down to Up ...
 
   The circuit:
   - hallSensor attached to pin 2 from +5V
   - Relay attached from pin 5 to ground
+  - DHT11 Temp/Humidity Sensor attached pin 4
 
   created  27 Sep 2005 -by Tom Igoe
   modified 30 Aug 2011 -by Tom Igoe
   modified 09 May 2019 -by Stepan Kryshtafovych
+
+// REQUIRES the following Arduino libraries:
+// - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
+// - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
+// - Firebase Arduino Lib: https://github.com/googlesamples/firebase-arduino/archive/master.zip
+// - Json for Firebase http://downloads.arduino.cc/libraries/github.com/bblanchon/ArduinoJson-5.13.2.zip
 
 
 
@@ -80,20 +87,11 @@ void setup() {
   Serial.println(F("Temperature Sensor"));
   Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
   Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
-  Serial.println(F("------------------------------------"));
-  // Print humidity sensor details.
+   // Print humidity sensor details.
   dht.humidity().getSensor(&sensor);
   Serial.println(F("Humidity Sensor"));
   Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
   Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
   Serial.println(F("------------------------------------"));
   // Set delay between sensor readings based on sensor details.
   delayMS = sensor.min_delay / 1000;
@@ -118,6 +116,7 @@ void loop() {
   else {
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
+    Firebase.setInt("GarageT", event.temperature);
     Serial.println(F("°C"));
   }
   // Get humidity event and print its value.
@@ -128,13 +127,16 @@ void loop() {
   else {
     Serial.print(F("Humidity: "));
     Serial.print(event.relative_humidity);
+    Firebase.setInt("GarageH", event.relative_humidity);
     Serial.println(F("%"));
+    Serial.println(Firebase.getString("hallSensorGarageH"));
+
   }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // read the pushbutton input pin:
+  // read the hall sensor input pin:
   hallSensorState = digitalRead(hallSensorPin);
 
   // compare the hallSensorState to its previous state
@@ -147,6 +149,7 @@ void loop() {
       Serial.print("number of button pushes: ");
       Serial.println(hallSensorCounter);
       Firebase.setString("hallSensorGarageH", "true");
+
 
     } else {
       // if the current state is LOW then the button went from on to off:
