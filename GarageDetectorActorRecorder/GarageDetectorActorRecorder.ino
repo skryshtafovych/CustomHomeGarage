@@ -1,17 +1,18 @@
 /*
-  State change detection (edge detection)
+  Cloud State change detection (cloud edge detection)
 
   Often, you don't need to know the state of a digital input all the time, but
   you just need to know when the input changes from one state to another.
   For example, you want to know when a Hall Sensor goes from OFF to ON. This is called
   state change detection, or edge detection.
 
-  This example shows how to detect when a button or button changes from off to on
-  and on to off.
+  This example shows how to detect when a hall Sensor or button changes from off to on
+  and on to off or Up to Down or Down to Up ...
 
   The circuit:
   - hallSensor attached to pin 2 from +5V
   - Relay attached from pin 5 to ground
+  - DHT11 Temp/Humidity Sensor attached pin 4
 
   created  27 Sep 2005 -by Tom Igoe
   modified 30 Aug 2011 -by Tom Igoe
