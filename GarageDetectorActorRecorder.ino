@@ -26,7 +26,7 @@
 
 // this constant won't change:
 const int  buttonPin = 2;    // the pin that the pushbutton is attached to
-const int ledPin = 13;       // the pin that the LED is attached to
+const int ledPin = 5;       // the pin that the LED is attached to
 
 // Variables will change:
 int buttonPushCounter = 0;   // counter for the number of button presses
@@ -70,7 +70,7 @@ void loop() {
   // turns on the LED every four button pushes by checking the modulo of the
   // button push counter. the modulo function gives you the remainder of the
   // division of two numbers:
-  if (buttonPushCounter % 4 == 0) {
+  if (buttonPushCounter % 2 == 0) {
     digitalWrite(ledPin, HIGH);
   } else {
     digitalWrite(ledPin, LOW);
