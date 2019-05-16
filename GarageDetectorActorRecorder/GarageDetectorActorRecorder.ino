@@ -115,6 +115,7 @@ void loop() {
   else {
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
+    Firebase.setInt("GarageT", event.temperature);
     Serial.println(F("°C"));
   }
   // Get humidity event and print its value.
@@ -125,7 +126,10 @@ void loop() {
   else {
     Serial.print(F("Humidity: "));
     Serial.print(event.relative_humidity);
+    Firebase.setInt("GarageH", event.relative_humidity);
     Serial.println(F("%"));
+    Serial.println(Firebase.getString("hallSensorGarageH"));
+
   }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,6 +148,7 @@ void loop() {
       Serial.print("number of button pushes: ");
       Serial.println(hallSensorCounter);
       Firebase.setString("hallSensorGarageH", "true");
+
 
     } else {
       // if the current state is LOW then the button went from on to off:
