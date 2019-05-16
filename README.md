@@ -12,6 +12,7 @@ The circuit:
 - DHT11 Temp/Humidity Sensor attached pin 4
 ## TO-DO
 
+- Add Timer to Loop to be able to set Specific Time For Certain Firebase Updates that change Often but stay at same equilibrium 
 - Will add Android app Part And simple none extensible security.
 
 
