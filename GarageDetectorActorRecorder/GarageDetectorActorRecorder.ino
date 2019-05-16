@@ -17,6 +17,12 @@
   modified 30 Aug 2011 -by Tom Igoe
   modified 09 May 2019 -by Stepan Kryshtafovych
 
+// REQUIRES the following Arduino libraries:
+// - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
+// - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
+// - Firebase Arduino Lib: https://github.com/googlesamples/firebase-arduino/archive/master.zip
+// - Json for Firebase http://downloads.arduino.cc/libraries/github.com/bblanchon/ArduinoJson-5.13.2.zip
+
 
 
   You Can find modified example on Github.
@@ -80,20 +86,11 @@ void setup() {
   Serial.println(F("Temperature Sensor"));
   Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
   Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
-  Serial.println(F("------------------------------------"));
-  // Print humidity sensor details.
+   // Print humidity sensor details.
   dht.humidity().getSensor(&sensor);
   Serial.println(F("Humidity Sensor"));
   Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
   Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
   Serial.println(F("------------------------------------"));
   // Set delay between sensor readings based on sensor details.
   delayMS = sensor.min_delay / 1000;
@@ -134,7 +131,7 @@ void loop() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // read the pushbutton input pin:
+  // read the hall sensor input pin:
   hallSensorState = digitalRead(hallSensorPin);
 
   // compare the hallSensorState to its previous state
