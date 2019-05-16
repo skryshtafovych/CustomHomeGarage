@@ -25,6 +25,14 @@
   This was based on below example code is in the public domain.
   http://www.arduino.cc/en/Tutorial/ButtonStateChange
 */
+#include <ESP8266WiFi.h>
+#include <FirebaseArduino.h>
+
+#include "secretValues.h"
+
+
+
+
 
 // this constant won't change:
 const int  hallSensorPin = 2;    // the pin that the pushbutton is attached to
@@ -42,6 +50,25 @@ void setup() {
   pinMode(relayPin, OUTPUT);
   // initialize serial communication:
   Serial.begin(9600);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // connect to wifi.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+  Serial.print("connected: ");
+  Serial.println(WiFi.localIP());
+
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+
+
+
 }
 
 
@@ -74,8 +101,11 @@ void loop() {
   // division of two numbers:
   if (hallSensorCounter % 2 == 0) {
     digitalWrite(relayPin, HIGH);
+      Firebase.setString("hallSensorGarage", "true");
   } else {
     digitalWrite(relayPin, LOW);
+          Firebase.setString("hallSensorGarage", "false");
+
   }
 
 }
