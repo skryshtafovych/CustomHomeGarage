@@ -85,9 +85,12 @@ void loop() {
       Serial.println("on");
       Serial.print("number of button pushes: ");
       Serial.println(hallSensorCounter);
+      Firebase.setString("hallSensorGarageH", "true");
+
     } else {
       // if the current state is LOW then the button went from on to off:
       Serial.println("off");
+      Firebase.setString("hallSensorGarageH", "false");
     }
     // Delay a little bit to avoid bouncing
     delay(50);
