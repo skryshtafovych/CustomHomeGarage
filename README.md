@@ -10,6 +10,7 @@ The circuit:
 - hallSensor attached to pin 2 from +5V
 - Relay attached from pin 5 to ground
 - DHT11 Temp/Humidity Sensor attached pin 4
+https://www.circuito.io/app?components=513,360216,653574,3061987
 ## TO-DO
 
 - Add Timer to Loop to be able to set Specific Time For Certain Firebase Updates that change Often but stay at same equilibrium 
