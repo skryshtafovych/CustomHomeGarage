@@ -34,16 +34,76 @@
 */
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
-#include "secretValues.h"
+#include "secrets.h"
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include <Wire.h>
+#include <EEPROM.h>
 
 
-#define DHTPIN 4     // Digital pin connected to the DHT sensor 
+#include "SSD1306.h"
+#include "SH1106.h"
+
+extern "C" {
+#include "user_interface.h"
+}
+
+
+
+#define DHTPIN 4     // Digital pin connected to the DHT sensor
 #define DHTTYPE    DHT11     // DHT 11
 DHT_Unified dht(DHTPIN, DHTTYPE);
 uint32_t delayMS;
+
+
+/*===== SETTINGS =====*/
+/* create display(Adr, SDA-pin, SCL-pin) */
+SSD1306 display(0x3c, 5, 4);   // GPIO 5 = D1, GPIO 4 = D2
+//SH1106 display(0x3c, 5, 4);
+
+/* select the button for your board */
+#define btn D3         // GPIO 0 = FLASH BUTTON 
+
+#define maxCh 13       // max Channel -> US = 11, EU = 13, Japan = 14
+#define ledPin 2       // led pin ( 2 = built-in LED)
+#define packetRate 5   // min. packets before it gets recognized as an attack
+
+#define flipDisplay true
+
+/* Display settings */
+#define minRow       0              /* default =   0 */
+#define maxRow     127              /* default = 127 */
+#define minLine      0              /* default =   0 */
+#define maxLine     63              /* default =  63 */
+
+/* render settings */
+#define Row1         0
+#define Row2        30
+#define Row3        35
+#define Row4        80
+#define Row5        85
+#define Row6       125
+
+#define LineText     0
+#define Line        12
+#define LineVal     47
+
+//===== Run-Time variables =====//
+unsigned long prevTime   = 0;
+unsigned long curTime    = 0;
+unsigned long pkts       = 0;
+unsigned long no_deauths = 0;
+unsigned long deauths    = 0;
+int curChannel           = 1;
+unsigned long maxVal     = 0;
+double multiplicator     = 0.0;
+bool canBtnPress         = true;
+
+unsigned int val[128];
+
+unsigned long timeDude;
+
 
 
 
@@ -71,6 +131,20 @@ void setup() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("connecting");
+
+    display.init();
+  if (flipDisplay) display.flipScreenVertically();
+
+  /* show start screen */
+  display.clear();
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(0, 0, "Weather-");
+  display.drawString(0, 16, "Station");
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(0, 40, "Copyright (c) 2019");
+  display.drawString(0, 50, "Stepan Kryshtafovych");
+  display.display();
+  delay(2500);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
@@ -78,24 +152,8 @@ void setup() {
   Serial.println();
   Serial.print("connected: ");
   Serial.println(WiFi.localIP());
-    // Initialize device.
-  dht.begin();
-  // Print temperature sensor details.
-  sensor_t sensor;
-  dht.temperature().getSensor(&sensor);
-  Serial.println(F("------------------------------------"));
-  Serial.println(F("Temperature Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-   // Print humidity sensor details.
-  dht.humidity().getSensor(&sensor);
-  Serial.println(F("Humidity Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.println(F("------------------------------------"));
+
   // Set delay between sensor readings based on sensor details.
-  delayMS = sensor.min_delay / 1000;
-  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
 
 
@@ -104,75 +162,19 @@ void setup() {
 
 void loop() {
 
+  timeDude = millis();
 
-  // Delay between measurements.
-  delay(delayMS);
-  // Get temperature event and print its value.
-  sensors_event_t event;
-  dht.temperature().getEvent(&event);
-  if (isnan(event.temperature)) {
-    Serial.println(F("Error reading temperature!"));
-  }
-  else {
-    Serial.print(F("Temperature: "));
-    Serial.print(event.temperature);
-    Firebase.setInt("GarageT", event.temperature);
-    Serial.println(F("°C"));
-  }
-  // Get humidity event and print its value.
-  dht.humidity().getEvent(&event);
-  if (isnan(event.relative_humidity)) {
-    Serial.println(F("Error reading humidity!"));
-  }
-  else {
-    Serial.print(F("Humidity: "));
-    Serial.print(event.relative_humidity);
-    Firebase.setInt("GarageH", event.relative_humidity);
-    Serial.println(F("%"));
-    Serial.println(Firebase.getString("hallSensorGarageH"));
-
-  }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // read the hall sensor input pin:
-  hallSensorState = digitalRead(hallSensorPin);
-
-  // compare the hallSensorState to its previous state
-  if (hallSensorState != lastHallSensorState) {
-    // if the state has changed, increment the counter
-    if (hallSensorState == HIGH) {
-      // if the current state is HIGH then the button went from off to on:
-      hallSensorCounter++;
-      Serial.println("on");
-      Serial.print("number of button pushes: ");
-      Serial.println(hallSensorCounter);
-      Firebase.setString("hallSensorGarageH", "true");
+  /* show start screen */
+  display.clear();
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(0, 0, "Temperature: 72°");
+  display.drawString(0, 16, "Humidity: 32%");
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(0, 40, "upTimer");
+  display.drawString(0, 50, (String)timeDude);
+  display.display();
 
 
-    } else {
-      // if the current state is LOW then the button went from on to off:
-      Serial.println("off");
-      Firebase.setString("hallSensorGarageH", "false");
-    }
-    // Delay a little bit to avoid bouncing
-    delay(50);
-  }
-  // save the current state as the last state, for next time through the loop
-  lastHallSensorState = hallSensorState;
 
-
-  // turns on the LED every four button pushes by checking the modulo of the
-  // button push counter. the modulo function gives you the remainder of the
-  // division of two numbers:
-  if (hallSensorCounter % 2 == 0) {
-    digitalWrite(relayPin, HIGH);
-      Firebase.setString("hallSensorGarage", "true");
-  } else {
-    digitalWrite(relayPin, LOW);
-          Firebase.setString("hallSensorGarage", "false");
-
-  }
 
 }
