@@ -63,7 +63,7 @@ SSD1306 display(0x3c, 5, 4);   // GPIO 5 = D1, GPIO 4 = D2
 //SH1106 display(0x3c, 5, 4);
 
 /* select the button for your board */
-#define btn D3         // GPIO 0 = FLASH BUTTON 
+#define btn D3         // GPIO 0 = FLASH BUTTON
 
 #define maxCh 13       // max Channel -> US = 11, EU = 13, Japan = 14
 #define ledPin 2       // led pin ( 2 = built-in LED)
