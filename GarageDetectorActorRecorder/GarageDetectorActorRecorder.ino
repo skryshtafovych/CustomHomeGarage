@@ -144,6 +144,8 @@ void setup() {
   display.drawString(0, 40, "Copyright (c) 2019");
   display.drawString(0, 50, "Stepan Kryshtafovych");
   display.display();
+  display.clear();
+
   delay(2500);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
