@@ -108,8 +108,8 @@ unsigned long timeDude;
 
 
 // this constant won't change:
-const int  hallSensorPin = 2;    // the pin that the pushbutton is attached to
-const int relayPin = 0;       // the pin that the LED is attached to
+const int  hallSensorPin = 0 ;    // the pin that the pushbutton is attached to
+const int relayPin = 2;       // the pin that the LED is attached to
 
 
 // Variables will change:
@@ -164,6 +164,19 @@ void setup() {
 void loop() {
 
   timeDude = millis();
+  FirebaseObject fire = Firebase.get("/");
+  String temp = fire.getString("upTimeGarage");
+  String relayActor = fire.getString("garageRelayActor");
+
+//  if(relayActor == "Open"){
+//    digitalWrite(relayPin, LOW);
+//
+//    
+//    }
+//        digitalWrite(relayPin, HIGH);
+
+
+  Serial.print("Firebase value: "+temp);
 
   /* show start screen */
   display.clear();
@@ -176,7 +189,7 @@ void loop() {
 
 
 
-  delay(2500);
+  delay(10000);
 
 
 
