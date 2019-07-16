@@ -51,7 +51,7 @@ extern "C" {
 
 
 
-#define DHTPIN 4     // Digital pin connected to the DHT sensor
+#define DHTPIN 8     // Digital pin connected to the DHT sensor
 #define DHTTYPE    DHT11     // DHT 11
 DHT_Unified dht(DHTPIN, DHTTYPE);
 uint32_t delayMS;
@@ -109,7 +109,7 @@ unsigned long timeDude;
 
 // this constant won't change:
 const int  hallSensorPin = 2;    // the pin that the pushbutton is attached to
-const int relayPin = 5;       // the pin that the LED is attached to
+const int relayPin = 0;       // the pin that the LED is attached to
 
 
 // Variables will change:
@@ -144,7 +144,6 @@ void setup() {
   display.drawString(0, 40, "Copyright (c) 2019");
   display.drawString(0, 50, "Stepan Kryshtafovych");
   display.display();
-  display.clear();
 
   delay(2500);
   while (WiFi.status() != WL_CONNECTED) {
@@ -168,14 +167,12 @@ void loop() {
 
   /* show start screen */
   display.clear();
-  display.setFont(ArialMT_Plain_16);
-  display.drawString(0, 0, "Temperature: 72°");
-  display.drawString(0, 16, "Humidity: 32%");
   display.setFont(ArialMT_Plain_10);
   display.drawString(0, 40, "upTimer");
   display.drawString(0, 50, (String)timeDude);
   display.display();
 
+  delay(500);
 
 
 
