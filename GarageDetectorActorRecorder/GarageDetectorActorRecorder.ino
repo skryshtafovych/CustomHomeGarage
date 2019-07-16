@@ -44,14 +44,35 @@
 
 #include "SSD1306.h"
 #include "SH1106.h"
+#include <Servo.h>
+
 
 extern "C" {
 #include "user_interface.h"
 }
 
 
+//////////////////////////
+//Pin DEFINITIONS////////
+////////////////////////
 
-#define DHTPIN 8     // Digital pin connected to the DHT sensor
+
+#define DHTPIN 12    // Digital pin connected to the DHT sensor  D6
+SSD1306 display(0x3c, 5, 4);   // GPIO 5 = D1, GPIO 4 = D2
+#define ledPin 2       // led pin ( 2 = built-in LED)
+#define btn D3         // GPIO 0 = FLASH BUTTON
+// this constant won't change:
+const int  hallSensorPin = 2 ;    // the pin that the pushbutton is attached to D4
+const int relayPin = 14;       // the pin that the LED is attached to D5
+Servo myservo;  // create servo object to control a servo THIS WE HAVE TO SET YO
+
+
+
+
+
+
+
+
 #define DHTTYPE    DHT11     // DHT 11
 DHT_Unified dht(DHTPIN, DHTTYPE);
 uint32_t delayMS;
@@ -59,14 +80,11 @@ uint32_t delayMS;
 
 /*===== SETTINGS =====*/
 /* create display(Adr, SDA-pin, SCL-pin) */
-SSD1306 display(0x3c, 5, 4);   // GPIO 5 = D1, GPIO 4 = D2
 //SH1106 display(0x3c, 5, 4);
 
 /* select the button for your board */
-#define btn D3         // GPIO 0 = FLASH BUTTON
 
 #define maxCh 13       // max Channel -> US = 11, EU = 13, Japan = 14
-#define ledPin 2       // led pin ( 2 = built-in LED)
 #define packetRate 5   // min. packets before it gets recognized as an attack
 
 #define flipDisplay true
@@ -104,18 +122,15 @@ unsigned int val[128];
 
 unsigned long timeDude;
 
-
-
-
-// this constant won't change:
-const int  hallSensorPin = 0 ;    // the pin that the pushbutton is attached to
-const int relayPin = 2;       // the pin that the LED is attached to
-
-
 // Variables will change:
 int hallSensorCounter = 0;   // counter for the number of button presses
 int hallSensorState = 0;         // current state of the button
 int lastHallSensorState = 0;     // previous state of the button
+
+
+
+int pos = 0;    // variable to store the servo position 
+
 
 void setup() {
   // initialize the button pin as a input:
@@ -157,6 +172,28 @@ void setup() {
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
 
+      // Initialize device.
+  dht.begin();
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+   // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println(F("Humidity Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.println(F("------------------------------------"));
+
+
+  myservo.attach(13);  // attaches the servo on pin 9 to the servo object 
+
+  
+
+
 
 }
 
@@ -167,16 +204,21 @@ void loop() {
   FirebaseObject fire = Firebase.get("/");
   String temp = fire.getString("upTimeGarage");
   String relayActor = fire.getString("garageRelayActor");
+  if(relayActor.equals("Open")){
+        digitalWrite(ledPin, HIGH);
 
-//  if(relayActor == "Open"){
-//    digitalWrite(relayPin, LOW);
-//
-//    
-//    }
-//        digitalWrite(relayPin, HIGH);
+    digitalWrite(relayPin, LOW);
+  Serial.println("Inside LOW : "+temp+relayActor);
 
+    
+    }
+      if(relayActor.equals("Close")){
+        digitalWrite(ledPin, LOW);
 
-  Serial.print("Firebase value: "+temp);
+        digitalWrite(relayPin, HIGH);
+      }
+
+  Serial.println("Firebase value: "+temp+relayActor);
 
   /* show start screen */
   display.clear();
@@ -186,6 +228,54 @@ void loop() {
   display.display();
   Firebase.setString("hallSensorGarage", "true");
   Firebase.setString("upTimeGarage", (String)timeDude);
+
+
+
+
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }
+  else {
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Firebase.setInt("GarageT", event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  }
+  else {
+    Serial.print(F("Humidity: "));
+    Serial.print(event.relative_humidity);
+    Firebase.setInt("GarageH", event.relative_humidity);
+    Serial.println(F("%"));
+    Serial.println(Firebase.getString("hallSensorGarageH"));
+
+  }
+
+
+
+
+
+ for(pos = 0; pos <= 180; pos += 1) // goes from 0 degrees to 180 degrees 
+  {                                  // in steps of 1 degree 
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
+  for(pos = 180; pos>=0; pos-=1)     // goes from 180 degrees to 0 degrees 
+  {                                
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
+ 
+
+
+  
 
 
 
