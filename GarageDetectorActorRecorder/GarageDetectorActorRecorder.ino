@@ -120,7 +120,7 @@ int lastHallSensorState = 0;     // previous state of the button
 void setup() {
   // initialize the button pin as a input:
   pinMode(hallSensorPin, INPUT);
-  // initialize the LED as an output:
+  // initialize the relay as an output:
   pinMode(relayPin, OUTPUT);
   // initialize serial communication:
   Serial.begin(9600);
@@ -138,10 +138,10 @@ void setup() {
   /* show start screen */
   display.clear();
   display.setFont(ArialMT_Plain_16);
-  display.drawString(0, 0, "Weather-");
+  display.drawString(0, 0, "Garage-");
   display.drawString(0, 16, "Station");
   display.setFont(ArialMT_Plain_10);
-  display.drawString(0, 40, "Copyright (c) 2019");
+  display.drawString(0, 40, "stepank.com");
   display.drawString(0, 50, "Stepan Kryshtafovych");
   display.display();
 
@@ -154,7 +154,7 @@ void setup() {
   Serial.print("connected: ");
   Serial.println(WiFi.localIP());
 
-  // Set delay between sensor readings based on sensor details.
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
 
 
@@ -171,8 +171,12 @@ void loop() {
   display.drawString(0, 40, "upTimer");
   display.drawString(0, 50, (String)timeDude);
   display.display();
+  Firebase.setString("hallSensorGarage", "true");
+  Firebase.setString("upTimeGarage", (String)timeDude);
 
-  delay(500);
+
+
+  delay(2500);
 
 
 
