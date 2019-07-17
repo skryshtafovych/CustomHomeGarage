@@ -23,8 +23,8 @@ https://www.circuito.io/app?components=513,360216,653574,3061987
 
 ## WIRING TODO
 
-- Switch the replay pin from 5 since i believe it messes with Screen working properly... re-solder the connections.
 - Garage + wire needs solder point passed pull down trigger.
+- D7=>Servo
 
 
 ## REQUIRES the following Arduino libraries:
